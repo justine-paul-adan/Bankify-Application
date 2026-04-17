@@ -23,7 +23,7 @@ const STORAGE_KEYS = {
   LAST_ACTIVITY: "bankify_last_activity",
 };
 
-const IDLE_TIMEOUT_MS = 1 * 60 * 1000; // 15 minutes
+const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUserState] = useState<BankifyUserDto | null>(null);
