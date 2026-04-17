@@ -32,10 +32,18 @@ function App() {
   };
 
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    if (!user || user?.role !== "admin") return <Navigate to="/" replace />;
-    return <>{children}</>;
-  };
-  
+  const { user, isLoading } = useAuth();
+
+  // 🚫 Don't decide yet
+  if (isLoading) return null; // or a spinner
+
+  if (!user || user.role?.toLowerCase() !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
   return (
     <ChakraProvider>
       <Router>

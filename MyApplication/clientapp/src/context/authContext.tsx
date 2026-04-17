@@ -13,6 +13,7 @@ type AuthContextType = {
   setUser: (user: BankifyUserDto | null) => void;
   logout: (showModal?: boolean) => void;
   sessionExpired: boolean;
+  isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -32,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const timeoutRef = useRef<number | null>(null);
   const userRef = useRef<BankifyUserDto | null>(null);
   const lastUpdateRef = useRef(0);
-
+  const [isLoading, setIsLoading] = useState(true);
   // Keep ref in sync
   useEffect(() => {
     userRef.current = user;
@@ -69,10 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const updateLastActivity = () => {
-    localStorage.setItem(
-      STORAGE_KEYS.LAST_ACTIVITY,
-      Date.now().toString()
-    );
+    localStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY, Date.now().toString());
     resetIdleTimer();
   };
 
@@ -92,9 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Initial load
   useEffect(() => {
     const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
-    const lastActivity = localStorage.getItem(
-      STORAGE_KEYS.LAST_ACTIVITY
-    );
+    const lastActivity = localStorage.getItem(STORAGE_KEYS.LAST_ACTIVITY);
 
     if (storedUser) {
       try {
@@ -118,6 +114,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logout();
       }
     }
+    setIsLoading(false); // ✅ IMPORTANT
   }, []);
 
   // Activity + cross-tab sync
@@ -141,10 +138,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     const handleStorage = (event: StorageEvent) => {
-      if (
-        event.key === STORAGE_KEYS.LAST_ACTIVITY &&
-        event.newValue
-      ) {
+      if (event.key === STORAGE_KEYS.LAST_ACTIVITY && event.newValue) {
         const lastTime = Number(event.newValue);
 
         if (
@@ -155,10 +149,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
 
-      if (
-        event.key === STORAGE_KEYS.USER &&
-        event.newValue === null
-      ) {
+      if (event.key === STORAGE_KEYS.USER && event.newValue === null) {
         logout();
       }
     };
@@ -181,10 +172,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setSessionExpired(false);
 
     if (userData) {
-      localStorage.setItem(
-        STORAGE_KEYS.USER,
-        JSON.stringify(userData)
-      );
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
       updateLastActivity();
     } else {
       localStorage.removeItem(STORAGE_KEYS.USER);
@@ -194,7 +182,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, logout, sessionExpired }}>
+    <AuthContext.Provider value={{ user, setUser, logout, sessionExpired, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
