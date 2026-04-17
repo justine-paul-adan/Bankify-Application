@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using WebAPI.Data;
 using WebAPI.DTOs;
@@ -11,18 +12,21 @@ namespace WebAPI.Services
     {
         private readonly BankifyDbContext _context;
         private readonly ILogger<TransactionService> _logger;
+        private readonly IHttpContextAccessor _http;
 
         private const int MaxFailedAttempts = 5;
         private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(45);
-        public TransactionService(BankifyDbContext context, ILogger<TransactionService> logger)
+        public TransactionService(BankifyDbContext context, ILogger<TransactionService> logger, IHttpContextAccessor http)
         {
             _context = context;
             _logger = logger;
+            _http = http;
         }
 
         public async Task<TransactionDto> ChangePinAsync(RequestTransactionDto request)
         {
             _logger.LogInformation("Changing account pin...");
+            await EnsureAccountAccess(request.AccountNumber);
 
             ValidatePin(request.NewPin);
 
@@ -60,6 +64,7 @@ namespace WebAPI.Services
         public async Task<TransactionDto> DepositAsync(RequestTransactionDto request)
         {
             _logger.LogInformation("Depositing funds...");
+            await EnsureAccountAccess(request.AccountNumber);
 
             ValidateAmount(request.Amount ?? 0);
 
@@ -91,6 +96,7 @@ namespace WebAPI.Services
         public async Task<TransactionDto> WithdrawAsync(RequestTransactionDto request)
         {
             _logger.LogInformation("Withdrawing funds...");
+            await EnsureAccountAccess(request.AccountNumber);
 
             if (request.Amount < 100)
                 throw new ArgumentException("Minimum withdrawal is 100");
@@ -126,6 +132,7 @@ namespace WebAPI.Services
         public async Task<TransactionDto> GetBalanceAsync(int accountNumber, string pin)
         {
             _logger.LogInformation("Getting account balance...");
+            await EnsureAccountAccess(accountNumber);
 
             var account = await AuthenticateOrThrowAsync(accountNumber, pin);
 
@@ -148,6 +155,7 @@ namespace WebAPI.Services
         public async Task<List<TransactionDto>> GetTransactionHistoryAsync(int accountNumber)
         {
             _logger.LogInformation("Getting transaction history...");
+            await EnsureAccountAccess(accountNumber);
 
             return await _context.Transactions
                 .AsNoTracking()
@@ -275,6 +283,38 @@ namespace WebAPI.Services
         {
             if (string.IsNullOrWhiteSpace(pin) || !Regex.IsMatch(pin, @"^\d{6}$"))
                 throw new ArgumentException("PIN must be exactly 6 digits");
+        }
+        private BankifyUserDto? GetCurrentUser()
+        {
+            var user = _http.HttpContext?.User;
+
+            if (user == null || !user.Identity!.IsAuthenticated)
+                return null;
+
+            return new BankifyUserDto
+            {
+                UserRef = user.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                Email = user.FindFirst(ClaimTypes.Email)?.Value,
+                Role = user.FindFirst(ClaimTypes.Role)?.Value
+            };
+        }
+
+        private async Task EnsureAccountAccess(int accountNumber)
+        {
+            var currentUser = GetCurrentUser()
+                ?? throw new UnauthorizedAccessException();
+
+            // Admin & Teller → full access
+            if (currentUser.Role == Roles.Admin || currentUser.Role == Roles.Teller)
+                return;
+
+            // User → only own account
+            var user = await _context.BankifyUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserRef == currentUser.UserRef);
+
+            if (user == null || user.AccountNumber != accountNumber)
+                throw new UnauthorizedAccessException("Access denied.");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using WebAPI.Data;
 using WebAPI.DTOs;
@@ -12,16 +13,28 @@ namespace WebAPI.Services
     {
         private readonly BankifyDbContext _context;
         private readonly ILogger<AccountService> _logger;
+        private readonly IHttpContextAccessor _http;
 
-        public AccountService(BankifyDbContext context, ILogger<AccountService> logger)
+        public AccountService(
+            BankifyDbContext context,
+            ILogger<AccountService> logger,
+            IHttpContextAccessor http)
         {
             _context = context;
             _logger = logger;
+            _http = http;
         }
 
         public async Task<AccountDto> CreateAccountAsync(CreateAccountDto dto)
         {
             _logger.LogInformation("Creating account...");
+
+            var currentUser = GetCurrentUser() 
+                ?? throw new UnauthorizedAccessException();
+
+            // Block normal users
+            if (currentUser.Role == Roles.User)
+                throw new UnauthorizedAccessException("Only Admin or Teller can create accounts.");
 
             if (string.IsNullOrWhiteSpace(dto?.Email))
                 throw new ArgumentException("Email is required.");
@@ -43,7 +56,6 @@ namespace WebAPI.Services
                 PhoneNumber = dto.PhoneNumber,
                 AvailableBalance = dto.AvailableBalance ?? 0,
 
-                // 🔐 Default PIN (force change)
                 PinCode = BCryptPin("000000"),
                 RequirePinChange = true,
 
@@ -57,49 +69,19 @@ namespace WebAPI.Services
             _context.Accounts.Add(account);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Account created: {AccountNumber}", account.AccountNumber);
-
-            return MapToDto(account);
-        }
-
-        public async Task<bool> DeleteAccountAsync(int accountNumber)
-        {
-            _logger.LogInformation("Deleting account...");
-
-            var account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
-
-            if (account == null)
-                throw new KeyNotFoundException("Account not found");
-
-            // Soft delete
-            account.Status = "Deleted";
-
-            _context.Accounts.Update(account);
-            await _context.SaveChangesAsync();
-            
-            _logger.LogInformation("Account deleted: {AccountNumber}", account.AccountNumber);
-
-            return true;
-        }
-
-        public async Task<AccountDto?> GetAccountByNumberAsync(int accountNumber)
-        {
-            _logger.LogInformation("Getting account...");
-
-            var account = await _context.Accounts
-                .AsNoTracking()
-                .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
-
-            if (account == null)
-                throw new KeyNotFoundException("Account not found");
-
             return MapToDto(account);
         }
 
         public async Task<List<AccountDto>> GetAllAccountsAsync()
         {
             _logger.LogInformation("Getting all accounts...");
+
+            var currentUser = GetCurrentUser()
+                ?? throw new UnauthorizedAccessException();
+
+            // Only Admin/Teller can view all
+            if (currentUser.Role == Roles.User)
+                throw new UnauthorizedAccessException("Access denied.");
 
             var accounts = await _context.Accounts
                 .AsNoTracking()
@@ -108,9 +90,27 @@ namespace WebAPI.Services
             return accounts.Select(MapToDto).ToList();
         }
 
+        public async Task<AccountDto?> GetAccountByNumberAsync(int accountNumber)
+        {
+            _logger.LogInformation("Getting account...");
+
+            await EnsureAccountAccess(accountNumber);
+
+            var account = await _context.Accounts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
+
+            if (account == null)
+                throw new KeyNotFoundException("Account not found");
+
+            return MapToDto(account);
+        }
+
         public async Task<AccountDto> UpdateAccountAsync(AccountDto dto)
         {
             _logger.LogInformation("Updating account...");
+
+            await EnsureAccountAccess(dto.AccountNumber);
 
             var account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.AccountNumber == dto.AccountNumber);
@@ -125,6 +125,24 @@ namespace WebAPI.Services
             return MapToDto(account);
         }
 
+        public async Task<bool> DeleteAccountAsync(int accountNumber)
+        {
+            _logger.LogInformation("Deleting account...");
+
+            await EnsureAccountAccess(accountNumber);
+
+            var account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
+
+            if (account == null)
+                throw new KeyNotFoundException("Account not found");
+
+            account.Status = "Deleted";
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
         private void UpdateAccountFields(Account account, AccountDto dto)
         {
             if (!string.IsNullOrWhiteSpace(dto.FirstName))
@@ -178,6 +196,7 @@ namespace WebAPI.Services
 
             return (number % 900_000_000) + 100_000_000;
         }
+
         private AccountDto MapToDto(Account account)
         {
             return new AccountDto
@@ -197,6 +216,39 @@ namespace WebAPI.Services
                 LastFailedAttempt = account.LastFailedAttempt,
                 CreatedDate = account.CreatedDate
             };
+        }
+
+        private BankifyUserDto? GetCurrentUser()
+        {
+            var user = _http.HttpContext?.User;
+
+            if (user == null || !user.Identity!.IsAuthenticated)
+                return null;
+
+            return new BankifyUserDto
+            {
+                UserRef = user.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                Email = user.FindFirst(ClaimTypes.Email)?.Value,
+                Role = user.FindFirst(ClaimTypes.Role)?.Value
+            };
+        }
+
+        private async Task EnsureAccountAccess(int accountNumber)
+        {
+            var currentUser = GetCurrentUser()
+                ?? throw new UnauthorizedAccessException();
+
+            // Admin & Teller → full access
+            if (currentUser.Role == Roles.Admin || currentUser.Role == Roles.Teller)
+                return;
+
+            // Normal User → only own account
+            var user = await _context.BankifyUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserRef == currentUser.UserRef);
+
+            if (user == null || user.AccountNumber != accountNumber)
+                throw new UnauthorizedAccessException("Access denied.");
         }
     }
 }
