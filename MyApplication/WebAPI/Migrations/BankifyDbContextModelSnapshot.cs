@@ -33,7 +33,7 @@ namespace WebAPI.Migrations
                     b.Property<int>("AccountNumber")
                         .HasColumnType("int");
 
-                    b.Property<string>("AccoutRef")
+                    b.Property<string>("AccountRef")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");

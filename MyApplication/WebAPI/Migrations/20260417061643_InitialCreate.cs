@@ -17,7 +17,7 @@ namespace WebAPI.Migrations
                 {
                     AccountId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AccoutRef = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    AccountRef = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     AccountNumber = table.Column<int>(type: "int", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),

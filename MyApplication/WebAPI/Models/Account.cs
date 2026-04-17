@@ -3,7 +3,7 @@
     public class Account
     {
         public int AccountId { get; set; }
-        public string AccoutRef { get; set; } = string.Empty;
+        public string AccountRef { get; set; } = string.Empty;
         public int AccountNumber { get; set; }
         public string LastName { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;

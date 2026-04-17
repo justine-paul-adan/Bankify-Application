@@ -20,7 +20,7 @@ namespace WebAPI.Data
             modelBuilder.Entity<Account>()
                 .HasKey(a => a.AccountId);
             modelBuilder.Entity<Account>()
-                .Property(a => a.AccoutRef)
+                .Property(a => a.AccountRef)
                 .IsRequired()
                 .HasMaxLength(50);
             modelBuilder.Entity<Account>()
