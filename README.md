@@ -44,3 +44,4 @@ npm install react-router-dom
 npm install axios //for API CALLS
 npm install @chakra-ui/icons for icons
 npm install sass
+npm install recharts
