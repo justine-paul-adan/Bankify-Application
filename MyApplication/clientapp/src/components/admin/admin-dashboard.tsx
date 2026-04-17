@@ -12,7 +12,11 @@ import {
   Skeleton,
   Button,
   Flex,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
 } from "@chakra-ui/react";
+import { ChevronRightIcon } from "@chakra-ui/icons";
 import {
   LineChart,
   Line,
@@ -39,12 +43,6 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [openCreateAccount, setOpenCreateAccount] = useState(false);
   const [openCreateUser, setOpenCreateUser] = useState(false);
-
-  useEffect(() => {
-    if (!loading && (!user || user.role !== "Admin")) {
-      navigate("/");
-    }
-  }, [user, loading]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +72,23 @@ export default function AdminDashboard() {
   return (
     <Box p={6}>
       <VStack align="start" spacing={8}>
+        {/* ✅ Breadcrumbs */}
+        <Breadcrumb
+          fontSize="sm"
+          color="gray.500"
+          separator={<ChevronRightIcon color="gray.500" />}
+        >
+          <BreadcrumbItem>
+            <BreadcrumbLink onClick={() => navigate("/")}>
+              Home
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+
+          <BreadcrumbItem isCurrentPage>
+            <BreadcrumbLink>Admin Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+        </Breadcrumb>
+
         <Heading>Admin Dashboard</Heading>
 
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} w="100%">

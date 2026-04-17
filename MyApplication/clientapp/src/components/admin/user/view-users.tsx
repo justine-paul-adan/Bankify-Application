@@ -1,4 +1,22 @@
-import { Center, DeleteIcon, EditIcon, IconButton, Spinner, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/icons";
+import {
+  Box,
+  Center,
+  Spinner,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+  IconButton,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  Heading,
+  VStack,
+} from "@chakra-ui/react";
+import { DeleteIcon, EditIcon, ChevronRightIcon } from "@chakra-ui/icons";
+
 import { BankifyUserDto } from "../../../models/bankifyUser";
 import { deleteUser, getAllUsers } from "../../../services/bankifyUserService";
 import { useAuth } from "../../../context/authContext";
@@ -35,6 +53,11 @@ export default function ViewUsers() {
     await fetchUsers();
   };
 
+  const handleEdit = (user: BankifyUserDto) => {
+    setSelectedUser(user);
+    setIsEditOpen(true);
+  };
+
   if (loading) {
     return (
       <Center mt={10}>
@@ -43,53 +66,75 @@ export default function ViewUsers() {
     );
   }
 
-  const handleEdit = (user: BankifyUserDto) => {
-    setSelectedUser(user);
-    setIsEditOpen(true);
-  };
-
   return (
-    <>
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>User Ref</Th>
-            <Th>Email</Th>
-            <Th>Role</Th>
-            <Th>Account Number</Th>
-            <Th>Phone Number</Th>
-            <Th>Actions</Th>
-          </Tr>
-        </Thead>
+    <Box p={6}>
+      <VStack align="start" spacing={6}>
+        {/* ✅ Breadcrumb */}
+        <Breadcrumb
+          fontSize="sm"
+          color="gray.500"
+          separator={<ChevronRightIcon color="gray.500" />}
+        >
+          <BreadcrumbItem>
+            <BreadcrumbLink onClick={() => navigate("/")}>
+              Home
+            </BreadcrumbLink>
+          </BreadcrumbItem>
 
-        <Tbody>
-          {users.map((user) => (
-            <Tr key={user.userRef}>
-              <Td>{user.userRef}</Td>
-              <Td>{user.email}</Td>
-              <Td>{user.role}</Td>
-              <Td>{user.accountNumber}</Td>
-              <Td>{user.phoneNumber}</Td>
+          <BreadcrumbItem>
+            <BreadcrumbLink onClick={() => navigate("/admin/dashboard")}>
+              Admin Dashboard
+            </BreadcrumbLink>
+          </BreadcrumbItem>
 
-              <Td>
-                <IconButton
-                  aria-label="Edit"
-                  mr={2}
-                  icon={<EditIcon />}
-                  onClick={() => handleEdit(user)}
-                />
+          <BreadcrumbItem isCurrentPage>
+            <BreadcrumbLink>Users</BreadcrumbLink>
+          </BreadcrumbItem>
+        </Breadcrumb>
 
-                <IconButton
-                  aria-label="Delete"
-                  colorScheme="red"
-                  icon={<DeleteIcon />}
-                  onClick={() => handleDelete(user.userRef)}
-                />
-              </Td>
+        <Heading size="md">Users</Heading>
+
+        <Table variant="simple">
+          <Thead>
+            <Tr>
+              <Th>User Ref</Th>
+              <Th>Email</Th>
+              <Th>Role</Th>
+              <Th>Account Number</Th>
+              <Th>Phone Number</Th>
+              <Th>Actions</Th>
             </Tr>
-          ))}
-        </Tbody>
-      </Table>
+          </Thead>
+
+          <Tbody>
+            {users.map((user) => (
+              <Tr key={user.userRef}>
+                <Td>{user.userRef}</Td>
+                <Td>{user.email}</Td>
+                <Td>{user.role}</Td>
+                <Td>{user.accountNumber}</Td>
+                <Td>{user.phoneNumber}</Td>
+
+                <Td>
+                  <IconButton
+                    aria-label="Edit"
+                    mr={2}
+                    icon={<EditIcon />}
+                    onClick={() => handleEdit(user)}
+                  />
+
+                  <IconButton
+                    aria-label="Delete"
+                    colorScheme="red"
+                    icon={<DeleteIcon />}
+                    onClick={() => handleDelete(user.userRef)}
+                  />
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </VStack>
 
       {selectedUser && (
         <EditUserModal
@@ -99,6 +144,6 @@ export default function ViewUsers() {
           refresh={fetchUsers}
         />
       )}
-    </>
+    </Box>
   );
 }

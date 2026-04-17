@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Box,
   Table,
   Thead,
   Tbody,
@@ -8,23 +9,29 @@ import {
   Td,
   Button,
   IconButton,
-  Icon,
   useDisclosure,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  Heading,
+  VStack,
+  useToast,
 } from "@chakra-ui/react";
+import { DeleteIcon, EditIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import EditAccountModal from "./edit-account-modal";
-import { DeleteIcon } from "@chakra-ui/icons";
-import { EditIcon } from "@chakra-ui/icons";
 import { AccountDto } from "../../../models/account";
 import {
   deleteAccount,
   getAllAccounts,
 } from "../../../services/accountService";
-import { useToast } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 
 export default function ViewAccounts() {
   const [accounts, setAccounts] = useState<AccountDto[]>([]);
   const toast = useToast();
-  const [pendingDelete, setPendingDelete] = useState<any>(null);
+  const navigate = useNavigate();
+
+  const [pendingDelete, setPendingDelete] = useState<AccountDto | null>(null);
   const [deleteTimer, setDeleteTimer] = useState<any>(null);
 
   const fetchAccounts = async () => {
@@ -36,14 +43,14 @@ export default function ViewAccounts() {
     fetchAccounts();
   }, []);
 
-  const handleDelete = (account: any) => {
+  const handleDelete = (account: AccountDto) => {
     setPendingDelete(account);
 
     const timer = setTimeout(async () => {
       await deleteAccount(account.accountNumber);
       fetchAccounts();
       setPendingDelete(null);
-    }, 5000); // 5 seconds
+    }, 5000);
 
     setDeleteTimer(timer);
 
@@ -73,63 +80,89 @@ export default function ViewAccounts() {
     });
   };
 
-  const [selectedAccount, setSelectedAccount] = useState<any>(null);
+  const [selectedAccount, setSelectedAccount] = useState<AccountDto | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const handleEdit = (account: any) => {
+  const handleEdit = (account: AccountDto) => {
     setSelectedAccount(account);
     onOpen();
   };
 
   return (
-    <>
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>Account Number</Th>
-            <Th>Email</Th>
-            <Th>Available Balance</Th>
-            <Th>Last Name</Th>
-            <Th>First Name</Th>
-            <Th>Middle Name</Th>
-            <Th>Status</Th>
-            <Th>Location</Th>
-          </Tr>
-        </Thead>
+    <Box p={6}>
+      <VStack align="start" spacing={6}>
+        {/* ✅ Breadcrumb */}
+        <Breadcrumb
+          fontSize="sm"
+          color="gray.500"
+          separator={<ChevronRightIcon color="gray.500" />}
+        >
+          <BreadcrumbItem>
+            <BreadcrumbLink onClick={() => navigate("/")}>
+              Home
+            </BreadcrumbLink>
+          </BreadcrumbItem>
 
-        <Tbody>
-          {accounts.map((acc) => (
-            <Tr key={acc.accountNumber}>
-              <Td>{acc.accountNumber}</Td>
-              <Td>{acc.email}</Td>
-              <Td>{acc.availableBalance}</Td>
-              <Td>{acc.lastName}</Td>
-              <Td>{acc.firstName}</Td>
-              <Td>{acc.middleName}</Td>
-              <Td>{acc.status}</Td>
-              <Td>{acc.location}</Td>
+          <BreadcrumbItem>
+            <BreadcrumbLink onClick={() => navigate("/admin/dashboard")}>
+              Admin Dashboard
+            </BreadcrumbLink>
+          </BreadcrumbItem>
 
-              <Td>
-                {/* EDIT */}
-                <IconButton
-                  aria-label="Edit"
-                  mr={2}
-                  icon={<EditIcon />}
-                  onClick={() => handleEdit(acc)}
-                />
+          <BreadcrumbItem isCurrentPage>
+            <BreadcrumbLink>Accounts</BreadcrumbLink>
+          </BreadcrumbItem>
+        </Breadcrumb>
 
-                {/* DELETE */}
-                <IconButton
-                  aria-label="Delete"
-                  colorScheme="red"
-                  onClick={() => handleDelete(acc)}
-                  icon={<DeleteIcon />}
-                />
-              </Td>
+        <Heading size="md">Accounts</Heading>
+
+        <Table variant="simple">
+          <Thead>
+            <Tr>
+              <Th>Account Number</Th>
+              <Th>Email</Th>
+              <Th>Available Balance</Th>
+              <Th>Last Name</Th>
+              <Th>First Name</Th>
+              <Th>Middle Name</Th>
+              <Th>Status</Th>
+              <Th>Location</Th>
+              <Th>Actions</Th>
             </Tr>
-          ))}
-        </Tbody>
-      </Table>
+          </Thead>
+
+          <Tbody>
+            {accounts.map((acc) => (
+              <Tr key={acc.accountNumber}>
+                <Td>{acc.accountNumber}</Td>
+                <Td>{acc.email}</Td>
+                <Td>{acc.availableBalance}</Td>
+                <Td>{acc.lastName}</Td>
+                <Td>{acc.firstName}</Td>
+                <Td>{acc.middleName}</Td>
+                <Td>{acc.status}</Td>
+                <Td>{acc.location}</Td>
+
+                <Td>
+                  <IconButton
+                    aria-label="Edit"
+                    mr={2}
+                    icon={<EditIcon />}
+                    onClick={() => handleEdit(acc)}
+                  />
+
+                  <IconButton
+                    aria-label="Delete"
+                    colorScheme="red"
+                    onClick={() => handleDelete(acc)}
+                    icon={<DeleteIcon />}
+                  />
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </VStack>
 
       {selectedAccount && (
         <EditAccountModal
@@ -139,6 +172,6 @@ export default function ViewAccounts() {
           refresh={fetchAccounts}
         />
       )}
-    </>
+    </Box>
   );
 }

@@ -1,25 +1,6 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Input,
-  VStack,
-  FormControl,
-  FormLabel,
-  Text,
-  HStack,
-  useToast,
-} from "@chakra-ui/react";
-
-import { useState } from "react";
-import {
-  BankifyUserDto,
-  UpdateBankifyUserDto,
-} from "../../../models/bankifyUser";
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, VStack, FormControl, FormLabel, Text, HStack, useToast } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { BankifyUserDto, UpdateBankifyUserDto } from "../../../models/bankifyUser";
 import { updateUser } from "../../../services/bankifyUserService";
 
 interface Props {
@@ -29,12 +10,10 @@ interface Props {
   refresh: () => void;
 }
 
-export default function EditUserModal({
-  isOpen,
-  onClose,
-  user,
-  refresh,
-}: Props) {
+export default function EditUserModal({ isOpen, onClose, user, refresh }: Props) {
+  const [errors, setErrors] = useState<Partial<UpdateBankifyUserDto>>({});
+  const toast = useToast();
+
   const [currentUser, setCurrentUser] = useState<UpdateBankifyUserDto>({
     userRef: user?.userRef ?? "",
     email: user?.email ?? "",
@@ -44,11 +23,8 @@ export default function EditUserModal({
     phoneNumber: user?.phoneNumber ?? "",
   });
 
-  const [errors, setErrors] = useState<Partial<UpdateBankifyUserDto>>({});
-const toast = useToast();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     setCurrentUser((prev) => ({
       ...prev,
       [name]: value,
@@ -64,11 +40,11 @@ const toast = useToast();
       errs.email = "Invalid email format";
     }
 
-    if (!currentUser.password ) {
+    if (!currentUser.password) {
       errs.password = "Current password is required";
     }
 
-    if (!currentUser.newPassword ) {
+    if (!currentUser.newPassword) {
       errs.newPassword = "New password is required";
     }
 
@@ -81,38 +57,38 @@ const toast = useToast();
   };
 
   const handleUpdate = async () => {
-  if (!validate()) return;
+    if (!validate()) return;
 
-  try {
-    const response = await updateUser(currentUser);
-console.log("Update response", response);
-    toast({
-      title: "Success",
-      description: "User updated successfully",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
+    try {
+      const response = await updateUser(currentUser);
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
 
-    refresh();
-    onClose();
-  } catch (error: any) {
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Something went wrong";
+      refresh();
+      onClose();
+    } 
+    catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Something went wrong";
 
-    toast({
-      title: "Update failed",
-      description: message,
-      status: "error",
-      duration: 4000,
-      isClosable: true,
-    });
+      toast({
+        title: "Update failed",
+        description: message,
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
 
-    console.error("Update failed", error);
-  }
-};
+      console.error("Update failed", error);
+    }
+  };
 
   const hasChanges =
     currentUser.email !== (user?.email ?? "") ||
@@ -121,6 +97,21 @@ console.log("Update response", response);
     currentUser.password !== "" ||
     currentUser.newPassword !== "";
 
+  useEffect(() => {
+    if (user) {
+      setCurrentUser({
+        userRef: user.userRef ?? "",
+        email: user.email ?? "",
+        role: user.role ?? "",
+        password: "",
+        newPassword: "",
+        phoneNumber: user.phoneNumber ?? "",
+      });
+
+      setErrors({});
+    }
+  }, [user]);
+  
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
       <ModalOverlay />
