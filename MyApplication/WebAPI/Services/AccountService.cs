@@ -21,6 +21,8 @@ namespace WebAPI.Services
 
         public async Task<AccountDto> CreateAccountAsync(CreateAccountDto dto)
         {
+            _logger.LogInformation("Creating account...");
+
             if (string.IsNullOrWhiteSpace(dto?.Email))
                 throw new ArgumentException("Email is required.");
 
@@ -62,6 +64,8 @@ namespace WebAPI.Services
 
         public async Task<bool> DeleteAccountAsync(int accountNumber)
         {
+            _logger.LogInformation("Deleting account...");
+
             var account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
 
@@ -73,12 +77,16 @@ namespace WebAPI.Services
 
             _context.Accounts.Update(account);
             await _context.SaveChangesAsync();
+            
+            _logger.LogInformation("Account deleted: {AccountNumber}", account.AccountNumber);
 
             return true;
         }
 
         public async Task<AccountDto?> GetAccountByNumberAsync(int accountNumber)
         {
+            _logger.LogInformation("Getting account...");
+
             var account = await _context.Accounts
                 .AsNoTracking()
                 .FirstOrDefaultAsync(a => a.AccountNumber == accountNumber);
@@ -91,6 +99,8 @@ namespace WebAPI.Services
 
         public async Task<List<AccountDto>> GetAllAccountsAsync()
         {
+            _logger.LogInformation("Getting all accounts...");
+
             var accounts = await _context.Accounts
                 .AsNoTracking()
                 .ToListAsync();
@@ -100,6 +110,8 @@ namespace WebAPI.Services
 
         public async Task<AccountDto> UpdateAccountAsync(AccountDto dto)
         {
+            _logger.LogInformation("Updating account...");
+
             var account = await _context.Accounts
                 .FirstOrDefaultAsync(a => a.AccountNumber == dto.AccountNumber);
 
