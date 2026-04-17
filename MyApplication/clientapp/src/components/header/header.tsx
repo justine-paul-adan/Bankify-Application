@@ -31,7 +31,7 @@ const Header = () => {
         return [];
     }
   };
-  
+
   const navItems = navByRole(user?.role || "User");
   const getInitials = (email?: string): string =>
     email ? email[0].toUpperCase() + (email[1]?.toUpperCase() ?? "") : "UN";
@@ -88,7 +88,7 @@ const Header = () => {
                   Role: {user.role}
                 </MenuItem>
 
-                <MenuItem onClick={logout} color="red.500">
+                <MenuItem onClick={() => logout(false)} color="red.500">
                   Logout
                 </MenuItem>
               </MenuList>

@@ -139,6 +139,8 @@ namespace WebAPI.Services
 
             account.Status = "Deleted";
 
+            _context.Accounts.Remove(account);
+
             await _context.SaveChangesAsync();
 
             return true;

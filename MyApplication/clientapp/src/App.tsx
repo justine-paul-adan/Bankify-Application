@@ -23,6 +23,7 @@ import AdminDashboard from "./components/admin/admin-dashboard";
 import Home from "./components/home/home";
 import ViewAccounts from "./components/admin/account/view-accounts";
 import ViewUsers from "./components/admin/user/view-users";
+import TellerDashboard from "./components/teller/teller-dashboard";
 
 function App() {
   const { sessionExpired, user } = useAuth();
@@ -37,7 +38,7 @@ function App() {
   // 🚫 Don't decide yet
   if (isLoading) return null; // or a spinner
 
-  if (!user || user.role?.toLowerCase() !== "admin") {
+  if (!user || (user.role?.toLowerCase() !== "admin" && user.role?.toLowerCase() !== "teller")) {
     return <Navigate to="/" replace />;
   }
 
@@ -89,6 +90,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teller/dashboard"
+              element={
+                <ProtectedRoute>
+                  <TellerDashboard />
                 </ProtectedRoute>
               }
             />

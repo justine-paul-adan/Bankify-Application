@@ -1,5 +1,5 @@
 export interface AccountDto {
-  accountNumber: string;
+  accountNumber: number;
   firstName: string;
   lastName: string;
   middleName: string;
