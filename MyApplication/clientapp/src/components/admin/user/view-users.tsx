@@ -1,62 +1,190 @@
-import {
-  Box,
-  Center,
-  Spinner,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  IconButton,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Heading,
-  VStack,
-} from "@chakra-ui/react";
-import { DeleteIcon, EditIcon, ChevronRightIcon } from "@chakra-ui/icons";
-
+import s from "../user/view-user.module.scss";
 import { BankifyUserDto } from "../../../models/bankifyUser";
 import { deleteUser, getAllUsers } from "../../../services/bankifyUserService";
 import { useAuth } from "../../../context/authContext";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import {
+  Center,
+  Text,
+  Spinner,
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  Heading,
+  Button,
+  Flex,
+  Input,
+  Avatar,
+  Badge,
+  Divider,
+  useToast,
+  VStack
+} from "@chakra-ui/react";
+import { ChevronRightIcon } from "@chakra-ui/icons";
+import { BsTrash } from "react-icons/bs";
+import { FaRegEdit, FaPlus } from "react-icons/fa";
+import { IoIosWarning } from "react-icons/io";
 import EditUserModal from "./edit-user-modal";
+import CreateUserModal from "./create-user-modal";
 
 export default function ViewUsers() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
+
+  const DELETE_TOAST_ID = "delete-toast";
+
   const [users, setUsers] = useState<BankifyUserDto[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<BankifyUserDto | null>(null);
+  const [openCreateUser, setOpenCreateUser] = useState(false);
+
+  const pendingDeleteRef = useRef<{ user: BankifyUserDto; index: number } | null>(null);
+  const deleteTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!user || user.role === "User") {
+      navigate("/");
+      return;
+    }
+    fetchUsers();
+  }, []);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const data = await getAllUsers();
-      setUsers(data.data || []);
+      const res = await getAllUsers();
+      setUsers(res.data || []);
+    } catch {
+      toast({ title: "Failed to fetch users", status: "error" });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (!user || user.role === "User") navigate("/");
-    fetchUsers();
-  }, []);
+  const handleDelete = (selectedUser: BankifyUserDto) => {
+    const index = users.findIndex((u) => u.userRef === selectedUser.userRef);
 
-  const handleDelete = async (userRef: string) => {
-    setLoading(true);
-    await deleteUser(userRef);
-    await fetchUsers();
+    pendingDeleteRef.current = { user: selectedUser, index };
+
+    setUsers((prev) => prev.filter((u) => u.userRef !== selectedUser.userRef));
+
+    deleteTimerRef.current = setTimeout(async () => {
+      await deleteUser(selectedUser.userRef);
+      pendingDeleteRef.current = null;
+    }, 5000);
+
+    toast({
+      id: DELETE_TOAST_ID,
+      duration: 5000,
+      isClosable: true,
+      render: () => (
+        <Flex align="center" justify="space-between" bg="orange.500" color="white" px={3} py={2} borderRadius="md" gap={4}>
+          <IoIosWarning size={20} />
+          <Text>User marked for deletion</Text>
+          <Button size="sm" onClick={handleUndo}>
+            Undo
+          </Button>
+        </Flex>
+      ),
+    });
   };
 
-  const handleEdit = (user: BankifyUserDto) => {
-    setSelectedUser(user);
-    setIsEditOpen(true);
+  const handleUndo = () => {
+    if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+
+    const pending = pendingDeleteRef.current;
+    if (pending) {
+      setUsers((prev) => {
+        const copy = [...prev];
+        copy.splice(pending.index, 0, pending.user);
+        return copy;
+      });
+    }
+
+    pendingDeleteRef.current = null;
+    toast.close(DELETE_TOAST_ID);
+
+    toast({ title: "Deletion cancelled", status: "success", duration: 2000 });
   };
+
+  const filteredUsers = useMemo(() => {
+    const term = search.toLowerCase();
+
+    return users.filter((u) =>
+      [u.email, u.phoneNumber, u.role, u.accountNumber]
+        .join(" ")
+        .toLowerCase()
+        .includes(term)
+    );
+  }, [search, users]);
+
+  const roleColorMap: Record<string, string> = {
+    Admin: "green",
+    Teller: "blue",
+    User: "gray",
+  };
+
+  const UserCard = ({
+    user,
+    onDelete,
+  }: {
+    user: BankifyUserDto;
+    onDelete: (user: BankifyUserDto) => void;
+  }) => (
+    <Flex className={s.userCard}>
+      <Flex className={s.userInfo}>
+        <Avatar name={user.email} />
+        <Box className={s.userDetails}>
+          <Text fontWeight="bold">{user.email}</Text>
+          <Text fontSize="sm" color="gray.500">
+            {user.phoneNumber}
+          </Text>
+          <Text fontSize="xs" color="gray.400">
+            Account #{user.accountNumber}
+          </Text>
+        </Box>
+      </Flex>
+
+      <Divider orientation="vertical" className={s.verticalDivider} />
+
+      <Box className={s.roleSection}>
+        <Flex className={s.roleRow}>
+          <Text fontWeight="bold">Role:</Text>
+          <Badge colorScheme={roleColorMap[user.role] || "gray"}>
+            {user.role}
+          </Badge>
+        </Flex>
+
+        <Flex className={s.actions}>
+          <Button
+            size="sm"
+            variant="outline"
+            leftIcon={<FaRegEdit />}
+            onClick={() => {
+              setSelectedUser(user);
+              setIsEditOpen(true);
+            }}
+          >
+            Edit
+          </Button>
+
+          <Button
+            size="sm"
+            colorScheme="red"
+            leftIcon={<BsTrash />}
+            onClick={() => onDelete(user)}
+          >
+            Delete
+          </Button>
+        </Flex>
+      </Box>
+    </Flex>
+  );
 
   if (loading) {
     return (
@@ -67,74 +195,57 @@ export default function ViewUsers() {
   }
 
   return (
-    <Box p={6}>
-      <VStack align="start" spacing={6}>
-        {/* ✅ Breadcrumb */}
-        <Breadcrumb
-          fontSize="sm"
-          color="gray.500"
-          separator={<ChevronRightIcon color="gray.500" />}
+    <Box className={s.container}>
+      <Breadcrumb className={s.breadcrumb} separator={<ChevronRightIcon />}>
+        <BreadcrumbItem>
+          <BreadcrumbLink onClick={() => navigate("/")}>
+            Home
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbItem isCurrentPage>
+          <BreadcrumbLink>Users</BreadcrumbLink>
+        </BreadcrumbItem>
+      </Breadcrumb>
+
+      <Flex className={s.header}>
+        <VStack align="start" spacing={0} className={s.titleGroup}>
+          <Heading size="lg">Users Lookup</Heading>
+          <Text className={s.subtitle}>
+            Search and manage users
+          </Text>
+        </VStack>
+
+        <Button
+          colorScheme="green"
+          leftIcon={<FaPlus />}
+          onClick={() => setOpenCreateUser(true)}
         >
-          <BreadcrumbItem>
-            <BreadcrumbLink onClick={() => navigate("/")}>
-              Home
-            </BreadcrumbLink>
-          </BreadcrumbItem>
+          New User
+        </Button>
+      </Flex>
 
-          <BreadcrumbItem>
-            <BreadcrumbLink onClick={() => navigate("/admin/dashboard")}>
-              Admin Dashboard
-            </BreadcrumbLink>
-          </BreadcrumbItem>
+      <Box className={s.searchBox}>
+        <Heading size="md" mb={2}>
+          User Search
+        </Heading>
+        <Input
+          placeholder="Search by email, phone, role, account #"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </Box>
 
-          <BreadcrumbItem isCurrentPage>
-            <BreadcrumbLink>Users</BreadcrumbLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
+      <Heading size="sm" className={s.sectionTitle}>
+        Account Info
+      </Heading>
 
-        <Heading size="md">Users</Heading>
-
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>User Ref</Th>
-              <Th>Email</Th>
-              <Th>Role</Th>
-              <Th>Account Number</Th>
-              <Th>Phone Number</Th>
-              <Th>Actions</Th>
-            </Tr>
-          </Thead>
-
-          <Tbody>
-            {users.map((user) => (
-              <Tr key={user.userRef}>
-                <Td>{user.userRef}</Td>
-                <Td>{user.email}</Td>
-                <Td>{user.role}</Td>
-                <Td>{user.accountNumber}</Td>
-                <Td>{user.phoneNumber}</Td>
-
-                <Td>
-                  <IconButton
-                    aria-label="Edit"
-                    mr={2}
-                    icon={<EditIcon />}
-                    onClick={() => handleEdit(user)}
-                  />
-
-                  <IconButton
-                    aria-label="Delete"
-                    colorScheme="red"
-                    icon={<DeleteIcon />}
-                    onClick={() => handleDelete(user.userRef)}
-                  />
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </VStack>
+      {filteredUsers.length === 0 ? (
+        <Text className={s.emptyState}>No users found</Text>
+      ) : (
+        filteredUsers.map((u) => (
+          <UserCard key={u.userRef} user={u} onDelete={handleDelete} />
+        ))
+      )}
 
       {selectedUser && (
         <EditUserModal
@@ -142,6 +253,13 @@ export default function ViewUsers() {
           onClose={() => setIsEditOpen(false)}
           user={selectedUser}
           refresh={fetchUsers}
+        />
+      )}
+
+      {openCreateUser && (
+        <CreateUserModal
+          isOpen={openCreateUser}
+          onClose={() => setOpenCreateUser(false)}
         />
       )}
     </Box>

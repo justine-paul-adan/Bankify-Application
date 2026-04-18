@@ -33,17 +33,17 @@ function App() {
   };
 
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, isLoading } = useAuth();
+    const { user, isLoading } = useAuth();
 
-  // 🚫 Don't decide yet
-  if (isLoading) return null; // or a spinner
+    // 🚫 Don't decide yet
+    if (isLoading) return null; // or a spinner
 
-  if (!user || (user.role?.toLowerCase() !== "admin" && user.role?.toLowerCase() !== "teller")) {
-    return <Navigate to="/" replace />;
-  }
+    if (!user || (user.role?.toLowerCase() !== "admin" && user.role?.toLowerCase() !== "teller")) {
+      return <Navigate to="/" replace />;
+    }
 
-  return <>{children}</>;
-};
+    return <>{children}</>;
+  };
 
   return (
     <ChakraProvider>
@@ -90,6 +90,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute>
+                  <ViewUsers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/accounts"
+              element={
+                <ProtectedRoute>
+                  <ViewAccounts />
                 </ProtectedRoute>
               }
             />
