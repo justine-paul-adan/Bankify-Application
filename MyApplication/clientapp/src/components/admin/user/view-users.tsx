@@ -196,11 +196,9 @@ export default function ViewUsers() {
 
   return (
     <Box className={s.container}>
-      <Breadcrumb className={s.breadcrumb} separator={<ChevronRightIcon />}>
+      <Breadcrumb fontSize="xs" color="gray.500" separator={<ChevronRightIcon />}>
         <BreadcrumbItem>
-          <BreadcrumbLink onClick={() => navigate("/")}>
-            Home
-          </BreadcrumbLink>
+          <BreadcrumbLink onClick={() => navigate("/")}>Home</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbItem isCurrentPage>
           <BreadcrumbLink>Users</BreadcrumbLink>
