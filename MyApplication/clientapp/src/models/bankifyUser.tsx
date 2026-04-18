@@ -1,10 +1,10 @@
-
 export interface BankifyUserDto {
   userRef: string;
   email: string;
   role: string;
   accountNumber: string;
   phoneNumber: string;
+  createdDate: string;
 }
    
 export interface CreateBankifyUserDto {

@@ -10,6 +10,7 @@ import { RxDashboard } from "react-icons/rx";
 import { LuBanknote } from "react-icons/lu";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { GoGear } from "react-icons/go";
+import logo from "../assets/logo1.png";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -68,7 +69,7 @@ const Header = () => {
     <Box className={s.header}>
       <Flex align="center" justify="space-between" w="100%">
         <Link className={s.logo} href="/" _hover={{ textDecoration: "none" }}>
-          <img src="./logo1.png" alt="Bankify Logo" />
+          <img src={logo} alt="Bankify Logo" />
           <span>Bankify</span>
         </Link>
 

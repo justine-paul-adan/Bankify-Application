@@ -8,6 +8,7 @@ export interface AccountDto {
   phoneNumber: string;
   availableBalance: number;
   status: string;
+  createdDate: string;
 }
 
 export interface CreateAccountDto {

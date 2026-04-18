@@ -13,3 +13,10 @@ export interface RequestTransaction {
   currentPin: string;
   newPin: string;
 }
+
+export interface ActivityDto {
+  id: string;
+  type: "user" | "account";
+  message: string;
+  createdAt: string;
+};
