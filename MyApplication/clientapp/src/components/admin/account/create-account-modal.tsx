@@ -1,15 +1,6 @@
 import { useState } from "react";
-import {
-  Button,
-  Input,
-  VStack,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@chakra-ui/react";
+import { Button, VStack, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, InputGroup, InputLeftElement, Input } from "@chakra-ui/react";
+import { FaUser, FaEnvelope, FaMapMarkerAlt, FaPhone, FaMoneyBill } from "react-icons/fa";
 import { CreateAccountDto } from "../../../models/account";
 import { createAccount } from "../../../services/accountService";
 
@@ -50,31 +41,103 @@ export default function CreateAccountModal({ isOpen, onClose }: Props) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Create Account</ModalHeader>
+      <ModalContent borderRadius="xl" p={2}>
+        <ModalHeader fontSize="lg" fontWeight="semibold">
+          Create Account
+        </ModalHeader>
 
         <ModalBody>
           <VStack spacing={4}>
-            <Input name="firstName" placeholder="First Name" onChange={handleChange} />
-            <Input name="middleName" placeholder="Middle Name" onChange={handleChange} />
-            <Input name="lastName" placeholder="Last Name" onChange={handleChange} />
+            {/* First Name */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaUser color="gray" />
+              </InputLeftElement>
+              <Input
+                name="firstName"
+                placeholder="First Name"
+                onChange={handleChange}
+              />
+            </InputGroup>
 
-            <Input name="email" placeholder="Email" onChange={handleChange} />
-            <Input name="location" placeholder="Location" onChange={handleChange} />
-            <Input name="phoneNumber" placeholder="Phone Number" onChange={handleChange} />
+            {/* Middle Name */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaUser color="gray" />
+              </InputLeftElement>
+              <Input
+                name="middleName"
+                placeholder="Middle Name"
+                onChange={handleChange}
+              />
+            </InputGroup>
 
-            <Input
-              name="availableBalance"
-              type="number"
-              placeholder="Initial Balance"
-              onChange={handleChange}
-            />
+            {/* Last Name */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaUser color="gray" />
+              </InputLeftElement>
+              <Input
+                name="lastName"
+                placeholder="Last Name"
+                onChange={handleChange}
+              />
+            </InputGroup>
+
+            {/* Email */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaEnvelope color="gray" />
+              </InputLeftElement>
+              <Input
+                name="email"
+                placeholder="Email"
+                onChange={handleChange}
+              />
+            </InputGroup>
+
+            {/* Location */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaMapMarkerAlt color="gray" />
+              </InputLeftElement>
+              <Input
+                name="location"
+                placeholder="Location"
+                onChange={handleChange}
+              />
+            </InputGroup>
+
+            {/* Phone */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaPhone color="gray" />
+              </InputLeftElement>
+              <Input
+                name="phoneNumber"
+                placeholder="Phone Number"
+                onChange={handleChange}
+              />
+            </InputGroup>
+
+            {/* Balance */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaMoneyBill color="gray" />
+              </InputLeftElement>
+              <Input
+                name="availableBalance"
+                type="number"
+                placeholder="Initial Balance"
+                onChange={handleChange}
+              />
+            </InputGroup>
           </VStack>
         </ModalBody>
 
-        <ModalFooter>
+        <ModalFooter justifyContent="flex-end">
           <Button variant="ghost" mr={3} onClick={onClose}>
             Cancel
           </Button>

@@ -6,40 +6,57 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-  Input,
   VStack,
+  Input,
+  InputGroup,
+  InputLeftElement,
 } from "@chakra-ui/react";
+
+import {
+  FaUser,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaPhone,
+} from "react-icons/fa";
 
 import { useEffect, useState } from "react";
 import { AccountDto } from "../../../models/account";
 import { updateAccount } from "../../../services/accountService";
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  account: AccountDto;
+  refresh: () => void;
+};
 
 export default function EditAccountModal({
   isOpen,
   onClose,
   account,
   refresh,
-}: any) {
+}: Props) {
   const [currentAccount, setCurrentAccount] = useState<AccountDto>({
-    accountNumber: account?.accountNumber ?? 0,
-    firstName: account?.firstName ?? "",
-    middleName: account?.middleName ?? "",
-    lastName: account?.lastName ?? "",
-    email: account?.email ?? "",
-    location: account?.location ?? "",
-    phoneNumber: account?.phoneNumber ?? "",
-    availableBalance: account?.availableBalance ?? 0,
-    status: account?.status ?? "Active",
+    accountNumber: 0,
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    email: "",
+    location: "",
+    phoneNumber: "",
+    availableBalance: 0,
+    status: "Active",
+    createdDate: "",
   });
+
+  // Sync incoming account
   useEffect(() => {
     if (account) {
       setCurrentAccount(account);
     }
   }, [account]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     setCurrentAccount((prev) => ({
@@ -56,63 +73,108 @@ export default function EditAccountModal({
     } catch (error: any) {
       console.error(
         "Update failed",
-        error?.response?.data || error?.message || error,
+        error?.response?.data || error?.message || error
       );
       alert(
-        `Update failed: ${error?.response?.data || error?.message || "Unknown error"}`,
+        `Update failed: ${
+          error?.response?.data || error?.message || "Unknown error"
+        }`
       );
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
 
-      <ModalContent>
+      <ModalContent borderRadius="xl" p={2}>
         <ModalHeader>Edit Account</ModalHeader>
 
         <ModalBody>
-          <VStack spacing={3}>
-            <Input
-              name="firstName"
-              value={currentAccount.firstName}
-              onChange={handleChange}
-            />
+          <VStack spacing={4}>
+            
+            {/* First Name */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaUser />
+              </InputLeftElement>
+              <Input
+                name="firstName"
+                placeholder="First Name"
+                value={currentAccount.firstName}
+                onChange={handleChange}
+              />
+            </InputGroup>
 
-            <Input
-              name="middleName"
-              value={currentAccount.middleName}
-              onChange={handleChange}
-            />
+            {/* Middle Name */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaUser />
+              </InputLeftElement>
+              <Input
+                name="middleName"
+                placeholder="Middle Name"
+                value={currentAccount.middleName}
+                onChange={handleChange}
+              />
+            </InputGroup>
 
-            <Input
-              name="lastName"
-              value={currentAccount.lastName}
-              onChange={handleChange}
-            />
+            {/* Last Name */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaUser />
+              </InputLeftElement>
+              <Input
+                name="lastName"
+                placeholder="Last Name"
+                value={currentAccount.lastName}
+                onChange={handleChange}
+              />
+            </InputGroup>
 
-            <Input
-              name="email"
-              value={currentAccount.email}
-              onChange={handleChange}
-            />
+            {/* Email */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaEnvelope />
+              </InputLeftElement>
+              <Input
+                name="email"
+                placeholder="Email"
+                value={currentAccount.email}
+                onChange={handleChange}
+              />
+            </InputGroup>
 
-            <Input
-              name="location"
-              value={currentAccount.location}
-              onChange={handleChange}
-            />
+            {/* Location */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaMapMarkerAlt />
+              </InputLeftElement>
+              <Input
+                name="location"
+                placeholder="Location"
+                value={currentAccount.location}
+                onChange={handleChange}
+              />
+            </InputGroup>
 
-            <Input
-              name="phoneNumber"
-              value={currentAccount.phoneNumber}
-              onChange={handleChange}
-            />
+            {/* Phone */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaPhone />
+              </InputLeftElement>
+              <Input
+                name="phoneNumber"
+                placeholder="Phone Number"
+                value={currentAccount.phoneNumber}
+                onChange={handleChange}
+              />
+            </InputGroup>
           </VStack>
         </ModalBody>
 
         <ModalFooter>
-          <Button mr={3} onClick={onClose}>
+          <Button variant="ghost" mr={3} onClick={onClose}>
             Cancel
           </Button>
 

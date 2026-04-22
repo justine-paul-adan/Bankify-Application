@@ -9,9 +9,14 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  InputGroup,
+  InputLeftElement,
 } from "@chakra-ui/react";
 import { CreateBankifyUserDto } from "../../../models/bankifyUser";
 import { createUser } from "../../../services/bankifyUserService";
+import { FaEnvelope, FaPhone } from "react-icons/fa";
+import { RiContactsLine, RiLockPasswordFill } from "react-icons/ri";
+import { FaUserCircle } from "react-icons/fa";
 
 type Props = {
   isOpen: boolean;
@@ -23,7 +28,7 @@ export default function CreateUserModal({ isOpen, onClose }: Props) {
     email: "",
     password: "",
     phoneNumber: "",
-    accountNumber: "",
+    accountNumber: 0,
     role: "",
   });
 
@@ -55,11 +60,59 @@ export default function CreateUserModal({ isOpen, onClose }: Props) {
 
         <ModalBody>
           <VStack spacing={4}>
-            <Input name="email" placeholder="Email" onChange={handleChange} />
-            <Input name="role" placeholder="Role" onChange={handleChange} />
-            <Input name="accountNumber" placeholder="Account Number" onChange={handleChange} />
-            <Input name="phoneNumber" placeholder="Phone Number" onChange={handleChange} />
-            <Input name="password" placeholder="Password" type="password" onChange={handleChange} />
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaEnvelope color="gray" />
+              </InputLeftElement>
+              <Input
+                name="email"
+                placeholder="Email"
+                onChange={handleChange}
+              />
+            </InputGroup>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaUserCircle  color="gray" />
+              </InputLeftElement>
+              <Input
+                name="role"
+                placeholder="Role"
+                onChange={handleChange}
+              />
+            </InputGroup>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <RiContactsLine color="gray" />
+              </InputLeftElement>
+              <Input
+                name="accountNumber"
+                placeholder="Account Number"
+                onChange={handleChange}
+              />
+            </InputGroup>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaPhone color="gray" />
+              </InputLeftElement>
+              <Input
+                name="phoneNumber"
+                placeholder="Phone Number"
+                onChange={handleChange}
+              />
+            </InputGroup>
+
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <RiLockPasswordFill  color="gray" />
+              </InputLeftElement>
+              <Input
+                name="password"
+                placeholder="Password"
+                type="password"
+                onChange={handleChange}
+              />
+            </InputGroup>
+
           </VStack>
         </ModalBody>
 

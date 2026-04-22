@@ -1,8 +1,16 @@
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, VStack, FormControl, FormLabel, Text, HStack, useToast } from "@chakra-ui/react";
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, VStack, FormControl, FormLabel, Text, HStack, useToast, InputGroup, InputLeftElement } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { BankifyUserDto, UpdateBankifyUserDto } from "../../../models/bankifyUser";
 import { updateUser } from "../../../services/bankifyUserService";
-
+import {
+  FaIdBadge,
+  FaEnvelope,
+  FaUserTag,
+  FaHashtag,
+  FaLock,
+  FaPhone,
+} from "react-icons/fa";
+import { RiContactsLine } from "react-icons/ri";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -71,7 +79,7 @@ export default function EditUserModal({ isOpen, onClose, user, refresh }: Props)
 
       refresh();
       onClose();
-    } 
+    }
     catch (error: any) {
       const message =
         error?.response?.data?.message ||
@@ -111,100 +119,103 @@ export default function EditUserModal({ isOpen, onClose, user, refresh }: Props)
       setErrors({});
     }
   }, [user]);
-  
+console.log("Current User State:", user);
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
       <ModalOverlay />
 
       <ModalContent>
-        <ModalHeader>Edit User</ModalHeader>
+        <ModalHeader>Update User Details</ModalHeader>
 
         <ModalBody>
           <VStack spacing={2} align="stretch">
-            {/* User Ref */}
-            <FormControl>
-              <FormLabel>User Reference</FormLabel>
-              <Input value={currentUser.userRef} isReadOnly isDisabled />
-            </FormControl>
+            
+            {/* User Reference */}
+              <InputGroup>
+                <InputLeftElement pointerEvents="none">
+                  <FaIdBadge />
+                </InputLeftElement>
+                <Input value={currentUser.userRef} isReadOnly isDisabled />
+              </InputGroup>
 
             {/* Email */}
-            <FormControl isInvalid={!!errors.email}>
-              <HStack justify="space-between">
-                <FormLabel>Email</FormLabel>
-                {errors.email && (
-                  <Text fontSize="sm" color="red.500">
-                    {errors.email}
-                  </Text>
-                )}
-              </HStack>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaEnvelope />
+              </InputLeftElement>
               <Input
                 name="email"
+                placeholder="Enter Email"
                 value={currentUser.email}
                 onChange={handleChange}
               />
-            </FormControl>
+            </InputGroup>
 
             {/* Role */}
-            <FormControl>
-              <FormLabel>Role</FormLabel>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaUserTag />
+              </InputLeftElement>
               <Input
                 name="role"
+                placeholder="Enter Role"
                 value={currentUser.role}
                 onChange={handleChange}
               />
-            </FormControl>
+            </InputGroup>
 
             {/* Account Number */}
-            <FormControl>
-              <FormLabel>Account Number</FormLabel>
-              <Input value={user.accountNumber} isReadOnly isDisabled />
-            </FormControl>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <RiContactsLine />
+              </InputLeftElement>
+              <Input
+                name="accountNumber"
+                value={user.accountNumber}
+                onChange={handleChange}
+              />
+            </InputGroup>
 
-            {/* Password */}
-            <FormControl>
-              <FormLabel>Current Password</FormLabel>
+            {/* Current Password */}
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaLock />
+              </InputLeftElement>
               <Input
                 type="password"
                 name="password"
+                placeholder="Enter Current Password"
                 value={currentUser.password}
                 onChange={handleChange}
               />
-            </FormControl>
+            </InputGroup>
 
             {/* New Password */}
-            <FormControl isInvalid={!!errors.newPassword}>
-              <HStack justify="space-between">
-                <FormLabel>New Password</FormLabel>
-                {errors.newPassword && (
-                  <Text fontSize="sm" color="red.500">
-                    {errors.newPassword}
-                  </Text>
-                )}
-              </HStack>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaLock />
+              </InputLeftElement>
               <Input
                 type="password"
                 name="newPassword"
+                placeholder="Enter New Password"
                 value={currentUser.newPassword}
                 onChange={handleChange}
               />
-            </FormControl>
+            </InputGroup>
 
             {/* Phone Number */}
-            <FormControl isInvalid={!!errors.phoneNumber}>
-              <HStack justify="space-between">
-                <FormLabel>Phone Number</FormLabel>
-                {errors.phoneNumber && (
-                  <Text fontSize="sm" color="red.500">
-                    {errors.phoneNumber}
-                  </Text>
-                )}
-              </HStack>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaPhone />
+              </InputLeftElement>
               <Input
                 name="phoneNumber"
+                placeholder="Enter Phone Number"
                 value={currentUser.phoneNumber}
                 onChange={handleChange}
               />
-            </FormControl>
+            </InputGroup>
           </VStack>
         </ModalBody>
 
