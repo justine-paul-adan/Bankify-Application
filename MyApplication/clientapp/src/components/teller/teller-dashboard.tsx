@@ -49,60 +49,8 @@ import {
   ModalBody,
   ModalFooter,
 } from "@chakra-ui/react";
+import EditAccountModal from "../admin/account/edit-account-modal";
 
-function EditAccountModal({ isOpen, onClose, account, onSave }: any) {
-  const [form, setForm] = useState(account);
-
-  useEffect(() => {
-    setForm(account);
-  }, [account]);
-
-  if (!account) return null;
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Edit Account</ModalHeader>
-        <ModalBody>
-          <VStack spacing={3}>
-            <Input
-              placeholder="First Name"
-              value={form?.firstName || ""}
-              onChange={(e) =>
-                setForm({ ...form, firstName: e.target.value })
-              }
-            />
-            <Input
-              placeholder="Last Name"
-              value={form?.lastName || ""}
-              onChange={(e) =>
-                setForm({ ...form, lastName: e.target.value })
-              }
-            />
-            <Input
-              placeholder="Email"
-              value={form?.email || ""}
-              onChange={(e) =>
-                setForm({ ...form, email: e.target.value })
-              }
-            />
-          </VStack>
-        </ModalBody>
-        <ModalFooter>
-          <Button mr={3} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button colorScheme="blue" onClick={() => onSave(form)}>
-            Save
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  );
-}
-
-/* ---------------- MAIN ---------------- */
 export default function TellerDashboard() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -113,7 +61,7 @@ export default function TellerDashboard() {
   const [loadingSearch, setLoadingSearch] = useState(false);
 
   const [openCreateAccount, setOpenCreateAccount] = useState(false);
-
+  const [hasSearched, setHasSearched] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure(); // delete
   const {
     isOpen: isEditOpen,
@@ -123,6 +71,7 @@ export default function TellerDashboard() {
 
   const handleSearch = async () => {
     if (!searchAccountNumber) return;
+    setHasSearched(true); // 👈 mark that search happened
 
     try {
       setLoadingSearch(true);
@@ -135,7 +84,7 @@ export default function TellerDashboard() {
         });
         return;
       }
-      
+
       const res = await getAccountByNumber(accountNumber);
       setAccount(res.data);
 
@@ -148,6 +97,8 @@ export default function TellerDashboard() {
       setTransactions([]);
     } finally {
       setLoadingSearch(false);
+      setLoadingSearch(false);
+
     }
   };
 
@@ -228,8 +179,10 @@ export default function TellerDashboard() {
                     type="text"
                     placeholder="Search by account number, name, or email..."
                     value={searchAccountNumber}
-                    onChange={(e) => setSearchAccountNumber(e.target.value)}
-                    onKeyDown={(e) => {
+                    onChange={(e) => {
+                      setSearchAccountNumber(e.target.value);
+                      setHasSearched(false);
+                    }} onKeyDown={(e) => {
                       if (e.key === "Enter") handleSearch();
                     }}
                     border="none"
@@ -257,10 +210,6 @@ export default function TellerDashboard() {
                   Search
                 </Button>
               </HStack>
-
-              <Text fontSize="sm" color="gray.500">
-                {account ? "Showing 1 result" : searchAccountNumber ? "Showing 0 results" : ""}
-              </Text>
             </VStack>
           </CardBody>
         </Card>
@@ -271,7 +220,7 @@ export default function TellerDashboard() {
           </Flex>
         )}
 
-        {!loadingSearch && searchAccountNumber && !account && (
+        {!loadingSearch && hasSearched && !account && (
           <Card bg="white" rounded="2xl" shadow="md">
             <CardBody>
               <Text color="gray.600">No account found. Try a different account number.</Text>
@@ -292,7 +241,7 @@ export default function TellerDashboard() {
                   />
                   <Box>
                     <Text fontWeight="semibold" fontSize="lg">
-                      {account.firstName} {account.lastName}
+                      {account.firstName} {account.middleName} {account.lastName}
                     </Text>
                     <Text color="gray.500">{account.email}</Text>
                     <Text color="gray.500" fontSize="sm">
@@ -402,7 +351,9 @@ export default function TellerDashboard() {
         isOpen={isEditOpen}
         onClose={onEditClose}
         account={account}
-        onSave={handleUpdate}
+        refresh={() => {
+          if (account) handleUpdate(account);
+        }}
       />
 
       {/* CREATE MODAL */}

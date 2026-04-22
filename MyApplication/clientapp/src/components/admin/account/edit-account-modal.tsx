@@ -26,7 +26,7 @@ import { updateAccount } from "../../../services/accountService";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  account: AccountDto;
+  account: AccountDto | null;
   refresh: () => void;
 };
 

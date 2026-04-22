@@ -24,20 +24,18 @@ const Header = () => {
       case "Admin":
         return [
           {
-            label: "Dashboard", icon: <RxDashboard />
-            , href: "/admin/dashboard"
-          },
+            label: "Dashboard", icon: <RxDashboard />, href: "/admin/dashboard" },
           { label: "Users", icon: <FiUsers  />, href: "/admin/users" },
           { label: "Accounts", icon: <LuBanknote />, href: "/admin/accounts" },
-          { label: "Reports", icon: <BsGraphUpArrow  />, href: "/admin/settings" },
+          // { label: "Reports", icon: <BsGraphUpArrow  />, href: "/admin/settings" },
         ];
 
       case "Teller":
         return [
           { label: "Dashboard", icon: <RxDashboard />, href: "/teller/dashboard" },
-          { label: "Customers", icon: <FiUsers  />, href: "/teller/customers" },
-          { label: "Reports", icon: <BsGraphUpArrow  />, href: "/admin/settings" },
-          { label: "Accounts", icon: <LuBanknote />, href: "/admin/accounts" },
+          // { label: "Customers", icon: <FiUsers  />, href: "/teller/customers" },
+          // { label: "Reports", icon: <BsGraphUpArrow  />, href: "/admin/settings" },
+          // { label: "Accounts", icon: <LuBanknote />, href: "/admin/accounts" },
         ];
 
       case "User":
