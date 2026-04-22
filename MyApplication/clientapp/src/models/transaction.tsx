@@ -1,6 +1,6 @@
 export interface TransactionDto {
   transactionRef: string;
-  accountNumber: string;
+  accountNumber: number;
   amount: number;
   type: string;
   createdBy: string;
@@ -8,7 +8,7 @@ export interface TransactionDto {
 }
 
 export interface RequestTransaction {
-  accountNumber: string;
+  accountNumber: number;
   amount: number;
   currentPin: string;
   newPin: string;

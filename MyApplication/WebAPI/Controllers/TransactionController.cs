@@ -5,7 +5,6 @@ using WebAPI.Services.Interfaces;
 
 namespace WebAPI.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TransactionController : ControllerBase

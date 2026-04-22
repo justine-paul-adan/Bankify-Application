@@ -76,7 +76,7 @@ function App() {
         <Box p={4}>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/transaction" element={<TransactionPage />} />
+            <Route path="/transactions" element={<TransactionPage />} />
 
             {/* Account routes */}
             <Route path="/view-accounts" element={<ViewAccounts />} />

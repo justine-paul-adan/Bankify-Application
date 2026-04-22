@@ -11,6 +11,7 @@ import { LuBanknote } from "react-icons/lu";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { GoGear } from "react-icons/go";
 import logo from "../assets/logo1.png";
+import { GrTransaction } from "react-icons/gr";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -42,7 +43,7 @@ const Header = () => {
       case "User":
         return [
           { label: "Dashboard", icon: <RxDashboard />, href: "/dashboard" },
-          { label: "Transactions", icon: <FiClock />, href: "/transactions" },
+          { label: "Transactions", icon: <GrTransaction />, href: "/transactions" },
           { label: "Settings", icon: <GoGear  />, href: "/settings" },
         ];
       default:

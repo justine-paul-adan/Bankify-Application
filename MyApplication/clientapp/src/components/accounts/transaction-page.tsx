@@ -7,16 +7,9 @@ import {
   FormLabel,
   Input,
   Select,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Heading,
   VStack,
   useToast,
-  Badge,
   Card,
   CardBody,
   Divider,
@@ -34,66 +27,57 @@ import { useAuth } from "../../context/authContext";
 import { RequestTransaction, TransactionDto } from "../../models/transaction";
 
 const TransactionPage = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const toast = useToast();
+
   const [type, setType] = useState("Deposit");
   const [loading, setLoading] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [history, setHistory] = useState<TransactionDto[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(true);
 
-  const getInitialRequest = (accountNumber: string): RequestTransaction => ({
+  const getInitialRequest = (accountNumber: number): RequestTransaction => ({
     accountNumber,
     amount: 0,
     currentPin: "",
     newPin: "",
   });
   const [request, setRequest] = useState<RequestTransaction>(
-    getInitialRequest(user?.accountNumber || ""),
+    getInitialRequest(user?.accountNumber || 0),
   );
 
   useEffect(() => {
     if (user) {
-      setRequest(getInitialRequest(user.accountNumber));
+      setRequest((prev) => ({
+        ...prev,
+        accountNumber: user.accountNumber,
+      }));
     }
   }, [user, type]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-
-    setRequest((prev) => ({
-      ...prev,
-      [name]:
-        name === "amount" || name === "accountNumber" ? Number(value) : value,
-    }));
+    setRequest((prev) => ({ ...prev, [name]: value }));
   };
 
-  const fetchTransactionHistory = async () => {
+  const fetchHistory = async () => {
+  try {
     if (!user) return;
 
-    try {
-      setLoadingHistory(true);
+    const res = await getHistory(user.accountNumber);
+    setHistory(res.data || []);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
-      const response = await getHistory(user.accountNumber);
-      setHistory(response.data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
+useEffect(() => {
+    console.log("Auth state:", { user, isLoading });
 
-  const toggleHistory = async () => {
-    const next = !showHistory;
-    setShowHistory(next);
-
-    if (next) {
-      await fetchTransactionHistory();
-    }
-  };
+  if (!isLoading && user) {
+    fetchHistory();
+  }
+}, [isLoading, user]);
 
   const handleTransaction = async () => {
     if (!user) return;
@@ -107,7 +91,6 @@ const TransactionPage = () => {
           description: "Minimum amount is 100",
           status: "warning",
           duration: 3000,
-          isClosable: true,
         });
         return;
       }
@@ -116,15 +99,12 @@ const TransactionPage = () => {
         case "Deposit":
           await depositMoney(request);
           break;
-
         case "Withdraw":
           await withdrawMoney(request);
           break;
-
         case "ChangePin":
           await changePin(request);
           break;
-
         case "Balance":
           const bal = await getBalance(user.accountNumber, request.currentPin);
           setBalance(bal.data?.amount || null);
@@ -136,36 +116,40 @@ const TransactionPage = () => {
         description: "Transaction completed successfully",
         status: "success",
         duration: 3000,
-        isClosable: true,
       });
 
-      fetchTransactionHistory();
-    } catch (error: any) {
+      fetchHistory();
+    } catch (err: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Transaction failed",
+        description: err.response?.data?.message || "Transaction failed",
         status: "error",
         duration: 3000,
-        isClosable: true,
       });
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <Box minH="80vh" p={6}>
-      <Flex justify="space-between" align="center" mb={6}>
-        <Heading size="lg">🏦 Bankify Transaction Dashboard</Heading>
-        {balance !== null && (
-          <Card bg="green.500" color="white" px={4} py={2}>
-            <Text fontWeight="bold">Balance: {balance}</Text>
-          </Card>
-        )}
-      </Flex>
+  const getIcon = (type: string) => {
+    if (type === "Deposit") return "⬆️";
+    if (type === "Withdraw") return "⬇️";
+    return "⚠️";
+  };
 
-      <Flex gap={8} direction={{ base: "column", md: "row" }}>
-        <Card flex="1" shadow="lg" borderRadius="2xl">
+  const getColor = (type: string) => {
+    if (type === "Deposit") return "green";
+    if (type === "Withdraw") return "red";
+    return "yellow";
+  };
+
+  return (
+    <Box bg="gray.100" minH="100vh" p={6}>
+      <Heading mb={6}>🏦 Bankify Transaction Dashboard</Heading>
+
+      <Flex gap={6} direction={{ base: "column", md: "row" }}>
+        {/* LEFT PANEL */}
+        <Card flex="1" borderRadius="xl" shadow="md">
           <CardBody>
             <Heading size="md" mb={4}>
               Quick Transaction
@@ -188,8 +172,9 @@ const TransactionPage = () => {
                   <Input
                     name="amount"
                     type="number"
-                    value={request.amount || ""}
+                    value={request.amount}
                     onChange={handleChange}
+                    bg="gray.50"
                   />
                 </FormControl>
               )}
@@ -201,7 +186,7 @@ const TransactionPage = () => {
                   type="password"
                   value={request.currentPin}
                   onChange={handleChange}
-                  autoComplete="new-password"
+                  bg="gray.50"
                 />
               </FormControl>
 
@@ -213,76 +198,80 @@ const TransactionPage = () => {
                     type="password"
                     value={request.newPin}
                     onChange={handleChange}
+                    bg="gray.50"
                   />
                 </FormControl>
               )}
 
               <Button
-                colorScheme="blue"
+                bg="blue.500"
+                color="white"
+                _hover={{ bg: "blue.600" }}
+                size="lg"
                 onClick={handleTransaction}
                 isLoading={loading}
-                size="lg"
               >
-                Execute Transaction
+                ⚡ Execute Transaction
               </Button>
             </VStack>
+
+            {balance && (
+              <Box mt={4} bg="green.500" color="white" p={3} borderRadius="md">
+                Balance: ₱{balance}
+              </Box>
+            )}
           </CardBody>
         </Card>
 
-        <Card flex="2" shadow="lg" borderRadius="2xl">
+        {/* RIGHT PANEL */}
+        <Card flex="1.5" borderRadius="xl" shadow="md">
           <CardBody>
-            <HStack justify="space-between" mb={4}>
+            <Flex justify="space-between" mb={4}>
               <Heading size="md">Transaction History</Heading>
-              <HStack>
-                <Button
-                  size="sm"
-                  onClick={toggleHistory}
-                  isLoading={loadingHistory}
-                >
-                  {showHistory ? "Hide History" : "View History"}
-                </Button>
-              </HStack>
-            </HStack>
+              <Button size="sm" onClick={() => setShowHistory(!showHistory)}>
+                {showHistory ? "Hide" : "View"}
+              </Button>
+            </Flex>
 
             <Divider mb={4} />
 
             {showHistory && (
-              <Box
-                maxH="38vh"
-                overflowY="auto"
-                overflowX="auto"
-                border="1px solid"
-                borderColor="gray.200"
-                borderRadius="md"
-                p={2}
-              >
-                {loadingHistory ? (
-                  <Text>Loading transaction history...</Text>
-                ) : (
-                  <Table size="sm" variant="striped">
-                    <Thead>
-                      <Tr>
-                        <Th>ID</Th>
-                        <Th>Type</Th>
-                        <Th>Amount</Th>
-                        <Th>Date</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {history.map((t) => (
-                        <Tr key={t.transactionRef}>
-                          <Td>{t.transactionRef}</Td>
-                          <Td>
-                            <Badge colorScheme="purple">{t.type}</Badge>
-                          </Td>
-                          <Td>₱{t.amount}</Td>
-                          <Td>{t.createdDate}</Td>
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                )}
-              </Box>
+              <VStack spacing={4} align="stretch">
+                {history.map((t) => (
+                  <Flex
+                    key={t.transactionRef}
+                    p={3}
+                    borderRadius="lg"
+                    bg="gray.50"
+                    align="center"
+                    justify="space-between"
+                  >
+                    <HStack spacing={3}>
+                      <Box
+                        bg={`${getColor(t.type)}.100`}
+                        color={`${getColor(t.type)}.600`}
+                        borderRadius="full"
+                        p={2}
+                      >
+                        {getIcon(t.type)}
+                      </Box>
+
+                      <Box>
+                        <Text fontWeight="bold">
+                          ₱{t.amount} {t.type.toLowerCase()}
+                        </Text>
+                        <Text fontSize="sm" color="gray.500">
+                          Ref: {t.transactionRef}
+                        </Text>
+                      </Box>
+                    </HStack>
+
+                    <Text fontSize="sm" color="gray.400">
+                      {t.createdDate}
+                    </Text>
+                  </Flex>
+                ))}
+              </VStack>
             )}
           </CardBody>
         </Card>
