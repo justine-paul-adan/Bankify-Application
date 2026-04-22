@@ -40,6 +40,7 @@ import { BankifyUserDto, UpdateBankifyUserDto } from "../../models/bankifyUser";
 import { FaEnvelope, FaLock, FaPhone, FaUserTag } from "react-icons/fa";
 
 import logo from "../assets/logo1.png";
+import { SignUp } from "../logins/signUp";
 
 /* ================= NAV CONFIG ================= */
 const NAV_CONFIG: Record<string, any[]> = {
@@ -64,6 +65,7 @@ const getInitials = (email?: string): string => {
 const Header = () => {
   const { user, setUser, logout } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"profile" | "security">("profile");
   const [isSaving, setIsSaving] = useState(false);
@@ -182,7 +184,10 @@ const Header = () => {
         {/* ACTIONS */}
         <Flex align="center">
           {!user ? (
-            <Button onClick={() => setIsLoginOpen(true)}>Login</Button>
+            <Flex gap={2}>
+              <Button onClick={() => setIsLoginOpen(true)}>Login</Button>
+              <Button onClick={() => setIsRegisterOpen(true)}>Register</Button>
+            </Flex>
           ) : (
             <Menu>
               <MenuButton>
@@ -247,6 +252,18 @@ const Header = () => {
           <ModalCloseButton />
           <ModalBody>
             <Login onSuccess={() => setIsLoginOpen(false)} />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* REGISTER MODAL */}
+      <Modal isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Register</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <SignUp onSuccess={() => setIsRegisterOpen(false)} />
           </ModalBody>
         </ModalContent>
       </Modal>
