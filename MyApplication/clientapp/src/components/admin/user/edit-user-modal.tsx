@@ -77,6 +77,7 @@ export default function EditUserModal({ isOpen, onClose, user, refresh }: Props)
         isClosable: true,
       });
 
+
       refresh();
       onClose();
     }
@@ -102,8 +103,9 @@ export default function EditUserModal({ isOpen, onClose, user, refresh }: Props)
     currentUser.email !== (user?.email ?? "") ||
     currentUser.role !== (user?.role ?? "") ||
     currentUser.phoneNumber !== (user?.phoneNumber ?? "") ||
-    currentUser.password !== "" ||
-    currentUser.newPassword !== "";
+    currentUser.phoneNumber !== (user?.phoneNumber ?? "") ||
+    (currentUser.password !== "" && currentUser.newPassword !== "");
+
 
   useEffect(() => {
     if (user) {
@@ -119,7 +121,7 @@ export default function EditUserModal({ isOpen, onClose, user, refresh }: Props)
       setErrors({});
     }
   }, [user]);
-console.log("Current User State:", user);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
       <ModalOverlay />
@@ -129,14 +131,14 @@ console.log("Current User State:", user);
 
         <ModalBody>
           <VStack spacing={2} align="stretch">
-            
+
             {/* User Reference */}
-              <InputGroup>
-                <InputLeftElement pointerEvents="none">
-                  <FaIdBadge />
-                </InputLeftElement>
-                <Input value={currentUser.userRef} isReadOnly isDisabled />
-              </InputGroup>
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <FaIdBadge />
+              </InputLeftElement>
+              <Input value={currentUser.userRef} isReadOnly isDisabled />
+            </InputGroup>
 
             {/* Email */}
             <InputGroup>
