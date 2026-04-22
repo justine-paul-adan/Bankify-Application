@@ -14,14 +14,6 @@ import avatar3 from "../assets/avatar3.png";
 export default function SimpleCarousel() {
   const [index, setIndex] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % slides.length);
-    }, 8000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   const slides = [
     {
       title: "Bank securely on the Bankify Online website or app",
@@ -39,6 +31,15 @@ export default function SimpleCarousel() {
       image: avatar3,
     },
   ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % slides.length);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
   const slide = slides[index];
 
   return (

@@ -26,7 +26,7 @@ import ViewUsers from "./components/admin/user/view-users";
 import TellerDashboard from "./components/teller/teller-dashboard";
 
 function App() {
-  const { sessionExpired, user } = useAuth();
+  const { sessionExpired } = useAuth();
 
   const handleReload = () => {
     window.location.reload();

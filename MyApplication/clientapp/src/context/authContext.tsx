@@ -39,14 +39,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     userRef.current = user;
   }, [user]);
 
-  const clearIdleTimer = () => {
+  const clearIdleTimer = useCallback(() => {
     if (timeoutRef.current !== null) {
       window.clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const logout = (showModal = false) => {
+  const logout = useCallback((showModal = false) => {
     clearIdleTimer();
     setUserState(null);
     setSessionExpired(showModal);
@@ -54,25 +54,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
     localStorage.removeItem(STORAGE_KEYS.LAST_ACTIVITY);
-  };
+  }, [clearIdleTimer]);
 
-  const expireSession = () => {
+  const expireSession = useCallback(() => {
     if (userRef.current) {
       logout(true);
     }
-  };
+  }, [logout]);
 
-  const resetIdleTimer = () => {
+  const resetIdleTimer = useCallback(() => {
     clearIdleTimer();
     timeoutRef.current = window.setTimeout(() => {
       expireSession();
     }, IDLE_TIMEOUT_MS);
-  };
+  }, [clearIdleTimer, expireSession]);
 
-  const updateLastActivity = () => {
+  const updateLastActivity = useCallback(() => {
     localStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY, Date.now().toString());
     resetIdleTimer();
-  };
+  }, [resetIdleTimer]);
 
   const handleUserActivity = useCallback(() => {
     const now = Date.now();
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         updateLastActivity();
       }
     }
-  }, []);
+  }, [updateLastActivity]);
 
   // Initial load
   useEffect(() => {
@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
     setIsLoading(false); // ✅ IMPORTANT
-  }, []);
+  }, [logout, updateLastActivity]);
 
   // Activity + cross-tab sync
   useEffect(() => {
@@ -165,7 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       window.removeEventListener("storage", handleStorage);
       clearIdleTimer();
     };
-  }, [user, handleUserActivity]);
+  }, [user, handleUserActivity, expireSession, logout, resetIdleTimer, clearIdleTimer]);
 
   const setUser = (userData: BankifyUserDto | null) => {
     setUserState(userData);

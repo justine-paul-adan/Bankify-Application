@@ -1,5 +1,5 @@
 import { ChevronRightIcon, HamburgerIcon } from "@chakra-ui/icons";
-import { Box, Breadcrumb, BreadcrumbItem, BreadcrumbLink, Button, Card, Text, CardBody, Flex, Heading, HStack, SimpleGrid, CardHeader, GridItem, Tooltip, VStack } from "@chakra-ui/react";
+import { Box, Breadcrumb, BreadcrumbItem, BreadcrumbLink, Button, Card, Text, CardBody, Flex, Heading, HStack, SimpleGrid, CardHeader, GridItem, VStack } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import s from "./admin-dashboard.module.scss";
 import { FaExclamationTriangle, FaUniversity, FaUser, FaUsers, FaPlus } from "react-icons/fa";

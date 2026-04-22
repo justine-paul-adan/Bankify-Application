@@ -1,4 +1,4 @@
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, VStack, FormControl, FormLabel, Text, HStack, useToast, InputGroup, InputLeftElement } from "@chakra-ui/react";
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, VStack, useToast, InputGroup, InputLeftElement } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { BankifyUserDto, UpdateBankifyUserDto } from "../../../models/bankifyUser";
 import { updateUser } from "../../../services/bankifyUserService";
@@ -6,7 +6,6 @@ import {
   FaIdBadge,
   FaEnvelope,
   FaUserTag,
-  FaHashtag,
   FaLock,
   FaPhone,
 } from "react-icons/fa";
@@ -19,7 +18,6 @@ interface Props {
 }
 
 export default function EditUserModal({ isOpen, onClose, user, refresh }: Props) {
-  const [errors, setErrors] = useState<Partial<UpdateBankifyUserDto>>({});
   const toast = useToast();
 
   const [currentUser, setCurrentUser] = useState<UpdateBankifyUserDto>({
@@ -60,7 +58,6 @@ export default function EditUserModal({ isOpen, onClose, user, refresh }: Props)
       errs.phoneNumber = "Phone number is required";
     }
 
-    setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
@@ -68,7 +65,7 @@ export default function EditUserModal({ isOpen, onClose, user, refresh }: Props)
     if (!validate()) return;
 
     try {
-      const response = await updateUser(currentUser);
+      await updateUser(currentUser);
       toast({
         title: "Success",
         description: "User updated successfully",
@@ -118,7 +115,6 @@ export default function EditUserModal({ isOpen, onClose, user, refresh }: Props)
         phoneNumber: user.phoneNumber ?? "",
       });
 
-      setErrors({});
     }
   }, [user]);
 

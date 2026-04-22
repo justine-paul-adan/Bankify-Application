@@ -1,6 +1,6 @@
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import { useToast, Text, Flex, Button, Avatar, Box, Divider, Badge, Center, Spinner, Breadcrumb, BreadcrumbItem, BreadcrumbLink, VStack, Heading, Input } from "@chakra-ui/react";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { BsTrash } from "react-icons/bs";
 import { FaRegEdit, FaPlus } from "react-icons/fa";
 import { IoIosWarning } from "react-icons/io";
@@ -29,15 +29,7 @@ export default function ViewAccounts() {
   const pendingDeleteRef = useRef<{ user: AccountDto; index: number } | null>(null);
   const deleteTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (!account || account.role === "User") {
-      navigate("/");
-      return;
-    }
-    fetchAccounts();
-  }, []);
-
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     try {
       setLoading(true);
       const res = await getAllAccounts();
@@ -47,7 +39,15 @@ export default function ViewAccounts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    if (!account || account.role === "User") {
+      navigate("/");
+      return;
+    }
+    fetchAccounts();
+  }, [account, navigate, fetchAccounts]);
 
   const handleDelete = (selectedUser: AccountDto) => {
     const index = accounts.findIndex((u) => u.accountNumber === selectedUser.accountNumber);

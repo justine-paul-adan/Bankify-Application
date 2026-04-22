@@ -8,7 +8,6 @@ import {
   Text,
   FormControl,
   FormLabel,
-  FormErrorMessage,
   HStack,
 } from "@chakra-ui/react";
 import { createUser } from "../../services/bankifyUserService";

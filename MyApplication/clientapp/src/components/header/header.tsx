@@ -33,7 +33,6 @@ import { useAuth } from "../../context/authContext";
 import { FiLock, FiLogOut, FiUser, FiUsers } from "react-icons/fi";
 import { RxDashboard } from "react-icons/rx";
 import { LuBanknote } from "react-icons/lu";
-import { GoGear } from "react-icons/go";
 import { GrTransaction } from "react-icons/gr";
 import { updateUser } from "../../services/bankifyUserService";
 import { BankifyUserDto, UpdateBankifyUserDto } from "../../models/bankifyUser";

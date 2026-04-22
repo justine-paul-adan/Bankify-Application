@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Button,
@@ -60,7 +60,7 @@ const TransactionPage = () => {
     setRequest((prev) => ({ ...prev, [name]: value }));
   };
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
   try {
     if (!user) return;
 
@@ -69,7 +69,7 @@ const TransactionPage = () => {
   } catch (err) {
     console.error(err);
   }
-};
+}, [user]);
 
 useEffect(() => {
     console.log("Auth state:", { user, isLoading });
@@ -77,7 +77,7 @@ useEffect(() => {
   if (!isLoading && user) {
     fetchHistory();
   }
-}, [isLoading, user]);
+}, [isLoading, user, fetchHistory]);
 
   const handleTransaction = async () => {
     if (!user) return;

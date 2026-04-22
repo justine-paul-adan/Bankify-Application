@@ -6,9 +6,6 @@ import {
   CardBody,
   Button,
   Flex,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
   Input,
   InputGroup,
   InputLeftElement,
@@ -23,20 +20,19 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import {
-  ChevronRightIcon,
+
   SearchIcon,
   DeleteIcon,
   EditIcon,
   CloseIcon,
 } from "@chakra-ui/icons";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   deleteAccount,
   getAccountByNumber,
   updateAccount,
   // getTransactionsByAccount,
 } from "../../services/accountService";
-import { useNavigate } from "react-router-dom";
 import { AccountDto } from "../../models/account";
 import CreateAccountModal from "../admin/account/create-account-modal";
 
@@ -52,7 +48,6 @@ import {
 import EditAccountModal from "../admin/account/edit-account-modal";
 
 export default function TellerDashboard() {
-  const navigate = useNavigate();
   const toast = useToast();
 
   const [searchAccountNumber, setSearchAccountNumber] = useState("");

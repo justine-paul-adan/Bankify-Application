@@ -3,7 +3,7 @@ import { BankifyUserDto } from "../../../models/bankifyUser";
 import { deleteUser, getAllUsers } from "../../../services/bankifyUserService";
 import { useAuth } from "../../../context/authContext";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Center,
   Text,
@@ -46,15 +46,7 @@ export default function ViewUsers() {
   const pendingDeleteRef = useRef<{ user: BankifyUserDto; index: number } | null>(null);
   const deleteTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (!user || user.role === "User") {
-      navigate("/");
-      return;
-    }
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const res = await getAllUsers();
@@ -64,7 +56,15 @@ export default function ViewUsers() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    if (!user || user.role === "User") {
+      navigate("/");
+      return;
+    }
+    fetchUsers();
+  }, [user, navigate, fetchUsers]);
 
   const handleDelete = (selectedUser: BankifyUserDto) => {
     const index = users.findIndex((u) => u.userRef === selectedUser.userRef);
