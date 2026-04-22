@@ -29,10 +29,12 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = builder.Configuration["AllowedOrigins"]?.Split(";") ?? new[] { "http://localhost:3000" };
+    
     options.AddPolicy("ReactPolicy",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
+            policy.WithOrigins(allowedOrigins)
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
